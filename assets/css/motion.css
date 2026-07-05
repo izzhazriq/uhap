@@ -1,0 +1,155 @@
+/* ============================================================================
+   motion.css — Shared UI animations & transitions for UiTM Health Unit
+   Drop-in stylesheet: <link rel="stylesheet" href="motion.css">
+   Apply utility classes (e.g. class="motion-fade-up") to animate elements.
+   Respects the user's "reduce motion" accessibility preference.
+   ============================================================================ */
+
+/* ── KEYFRAMES ──────────────────────────────────────────────────────────── */
+@keyframes motionFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes motionFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes motionFadeDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes motionFadeLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes motionFadeRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes motionPop {
+    0%   { opacity: 0; transform: scale(0.92); }
+    60%  { opacity: 1; transform: scale(1.02); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes motionSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes motionPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.45; }
+}
+
+@keyframes motionShake {
+    0%, 100%      { transform: translateX(0); }
+    20%, 60%      { transform: translateX(-6px); }
+    40%, 80%      { transform: translateX(6px); }
+}
+
+@keyframes motionCountUp {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── ENTRANCE UTILITY CLASSES ───────────────────────────────────────────── */
+.motion-fade        { animation: motionFadeIn   0.45s ease both; }
+.motion-fade-up     { animation: motionFadeUp   0.5s  cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-fade-down   { animation: motionFadeDown 0.5s  cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-fade-left   { animation: motionFadeLeft 0.5s  cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-fade-right  { animation: motionFadeRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-pop         { animation: motionPop      0.5s  cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-shake       { animation: motionShake    0.45s ease both; }
+
+/* ── STAGGERED DELAYS (for lists / grids / sequential reveals) ──────────── */
+.motion-delay-1 { animation-delay: 0.06s; }
+.motion-delay-2 { animation-delay: 0.12s; }
+.motion-delay-3 { animation-delay: 0.18s; }
+.motion-delay-4 { animation-delay: 0.24s; }
+.motion-delay-5 { animation-delay: 0.30s; }
+.motion-delay-6 { animation-delay: 0.36s; }
+
+/* ── SCROLL-REVEAL (toggled by JS when element enters viewport) ─────────── */
+.motion-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+.motion-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── INTERACTIVE / HOVER MOTION ─────────────────────────────────────────── */
+/* Gentle lift on hover (cards, tiles) */
+.motion-lift {
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.motion-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.10);
+}
+
+/* Pressable feedback (buttons, links) */
+.motion-press { transition: transform 0.12s ease, filter 0.18s ease; }
+.motion-press:hover  { filter: brightness(1.04); }
+.motion-press:active { transform: scale(0.96); }
+
+/* Animated underline for links */
+.motion-underline {
+    position: relative;
+    text-decoration: none;
+}
+.motion-underline::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -2px;
+    width: 100%; height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.motion-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* ── LOADING SPINNER ────────────────────────────────────────────────────── */
+.motion-spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: motionSpin 0.7s linear infinite;
+    vertical-align: middle;
+}
+.motion-pulse { animation: motionPulse 1.4s ease-in-out infinite; }
+
+/* Number count-up reveal (stat cards) */
+.motion-count { animation: motionCountUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ── PAGE-LEVEL SMOOTH SCROLL ───────────────────────────────────────────── */
+html.motion-smooth { scroll-behavior: smooth; }
+
+/* ── ACCESSIBILITY: honour reduced-motion preference ────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .motion-reveal { opacity: 1; transform: none; }
+}

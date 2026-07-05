@@ -1,10 +1,10 @@
 <?php
 session_start();
-require 'db.php';
+require '../config/db.php';
 
 // Guard: staff only
 if (!isset($_SESSION['staff_id'])) {
-    header("Location: staff_login.php");
+    header("Location: ../auth/staff_login.php");
     exit;
 }
 
@@ -98,6 +98,15 @@ while ($row = $count_result->fetch_assoc()) {
     <meta name="description" content="Manage all student appointments at UiTM Health Unit.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- jQuery + DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <!-- Shared motion / animation library -->
+    <link rel="stylesheet" href="../assets/motion.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="../assets/motion.js" defer></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -233,17 +242,17 @@ while ($row = $count_result->fetch_assoc()) {
 
         /* ── TOOLBAR ── */
         .toolbar {
-            display: flex; gap: 10px; align-items: center;
-            padding: 16px 20px; flex-wrap: wrap;
+            display: flex; gap: 12px; align-items: center;
+            padding: 20px 24px; flex-wrap: wrap;
             border-bottom: 1px solid var(--separator);
         }
 
         .search-input {
-            flex: 1; min-width: 200px;
-            padding: 10px 14px;
+            flex: 1; min-width: 220px;
+            padding: 11px 16px;
             background: var(--fill-1);
             border: 1.5px solid transparent;
-            border-radius: 10px;
+            border-radius: 12px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 14px;
             color: var(--label-primary);
@@ -254,22 +263,27 @@ while ($row = $count_result->fetch_assoc()) {
         .search-input:focus { border-color: var(--blue); background: rgba(0,122,255,0.05); }
 
         .filter-select {
-            padding: 10px 12px;
+            padding: 11px 36px 11px 16px;
             background: var(--fill-1);
             border: 1.5px solid transparent;
-            border-radius: 10px;
+            border-radius: 12px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 14px;
             color: var(--label-primary);
             outline: none;
             cursor: pointer;
             transition: border-color 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2363666b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
         }
         .filter-select:focus { border-color: var(--blue); }
 
         .btn-search {
             background: var(--blue); color: #fff; border: none;
-            padding: 10px 20px; border-radius: 10px;
+            padding: 11px 24px; border-radius: 12px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 14px; font-weight: 600; cursor: pointer;
             transition: background 0.2s; white-space: nowrap;
@@ -278,7 +292,7 @@ while ($row = $count_result->fetch_assoc()) {
 
         .btn-reset {
             background: var(--fill-1); color: var(--label-secondary);
-            border: none; padding: 10px 16px; border-radius: 10px;
+            border: none; padding: 11px 20px; border-radius: 12px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 14px; cursor: pointer;
             text-decoration: none;
@@ -300,7 +314,7 @@ while ($row = $count_result->fetch_assoc()) {
         /* ── TABLE ── */
         table { width: 100%; border-collapse: collapse; }
         thead th {
-            padding: 11px 18px; text-align: left;
+            padding: 14px 20px; text-align: left;
             font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
             text-transform: uppercase; color: var(--label-tertiary);
             border-bottom: 1px solid var(--separator);
@@ -308,7 +322,7 @@ while ($row = $count_result->fetch_assoc()) {
         tbody tr { transition: background 0.12s; }
         tbody tr:hover { background: var(--fill-2); }
         tbody td {
-            padding: 13px 18px; font-size: 14px; color: var(--label-primary);
+            padding: 18px 20px; font-size: 14px; color: var(--label-primary);
             border-bottom: 1px solid var(--separator); vertical-align: middle;
         }
         tbody tr:last-child td { border-bottom: none; }
@@ -336,24 +350,29 @@ while ($row = $count_result->fetch_assoc()) {
         .reminder-pending { font-size: 12px; font-weight: 500; color: var(--label-tertiary); }
 
         /* ── ACTION CONTROLS ── */
-        .action-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+        .action-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
         .status-select {
-            padding: 6px 10px;
+            padding: 8px 32px 8px 12px;
             background: var(--fill-1);
             border: 1.5px solid transparent;
-            border-radius: 8px;
+            border-radius: 10px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 13px;
             color: var(--label-primary);
             outline: none; cursor: pointer;
             transition: border-color 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2363666b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
         }
         .status-select:focus { border-color: var(--blue); }
 
         .btn-update {
             background: var(--blue); color: #fff; border: none;
-            padding: 6px 14px; border-radius: 8px;
+            padding: 8px 18px; border-radius: 10px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 13px; font-weight: 600; cursor: pointer;
             transition: background 0.2s;
@@ -363,7 +382,7 @@ while ($row = $count_result->fetch_assoc()) {
         .btn-delete {
             background: transparent; color: var(--red);
             border: 1.5px solid rgba(255,59,48,0.3);
-            padding: 6px 12px; border-radius: 8px;
+            padding: 8px 16px; border-radius: 10px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 13px; font-weight: 600; cursor: pointer;
             transition: background 0.2s, color 0.2s, border-color 0.2s;
@@ -376,6 +395,209 @@ while ($row = $count_result->fetch_assoc()) {
         .empty-title { font-size: 15px; font-weight: 600; color: var(--label-secondary); margin-bottom: 4px; }
         .empty-sub   { font-size: 13px; color: var(--label-tertiary); }
 
+        /* ── DATATABLES - APPLE / iOS STYLE ── */
+        .dataTables_wrapper {
+            padding: 0 24px 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        }
+
+        /* Search & Length - iOS style inputs */
+        .dataTables_wrapper .dataTables_length {
+            float: left !important;
+        }
+        .dataTables_wrapper .dataTables_filter {
+            float: right !important;
+            text-align: right !important;
+        }
+
+        /* Force spacing with flexbox on the wrapper */
+        .dataTables_wrapper .row:first-child {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .dataTables_wrapper .dataTables_length {
+            margin-right: 0 !important;
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+        .dataTables_length select,
+        .dataTables_filter input {
+            padding: 10px 14px;
+            background: #f5f5f7;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            font-size: 14px;
+            color: #1d1d1f;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .dataTables_length select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2363666b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 34px;
+        }
+
+        .dataTables_length select:focus,
+        .dataTables_filter input:focus {
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+        }
+
+        .dataTables_filter input {
+            width: 340px;
+            margin-left: 8px;
+        }
+        .dataTables_filter input::placeholder { color: #86868b; }
+
+        .dataTables_wrapper .dataTables_info {
+            clear: both !important;
+            float: left !important;
+        }
+        .dataTables_wrapper .dataTables_paginate {
+            clear: both !important;
+            float: right !important;
+        }
+
+        /* Info text */
+        .dataTables_info {
+            font-size: 13px;
+            color: #86868b;
+            padding: 20px 0 8px;
+            font-weight: 500;
+        }
+
+        /* Pagination - iOS style */
+        .dataTables_paginate {
+            padding: 16px 0;
+        }
+        .dataTables_paginate .paginate_button {
+            min-width: 38px;
+            height: 38px;
+            padding: 0 14px;
+            border-radius: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1d1d1f;
+            background: #ffffff;
+            border: 1px solid #d2d2d7;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dataTables_paginate .paginate_button:hover {
+            background: #f5f5f7;
+            border-color: #007aff;
+            color: #007aff;
+        }
+        .dataTables_paginate .paginate_button.current {
+            background: #007aff;
+            color: #ffffff;
+            border-color: #007aff;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+        }
+        .dataTables_paginate .paginate_button.current:hover {
+            background: #0062cc;
+            border-color: #0062cc;
+            color: #ffffff;
+        }
+        .dataTables_paginate .paginate_button.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: #f5f5f7;
+        }
+        .dataTables_paginate .paginate_button.disabled:hover {
+            background: #f5f5f7;
+            border-color: #d2d2d7;
+            color: #86868b;
+        }
+
+        /* Table styling - iOS style */
+        table.dataTable {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        table.dataTable thead {
+            box-shadow: 0 1px 0 #d2d2d7;
+        }
+        table.dataTable thead th {
+            padding: 16px 20px;
+            background: #ffffff;
+            border-bottom: none;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #86868b;
+        }
+        table.dataTable thead th.sorting:hover,
+        table.dataTable thead th.sorting_asc:hover,
+        table.dataTable thead th.sorting_desc:hover {
+            background: #f5f5f7;
+        }
+        table.dataTable thead th.sorting_asc:after,
+        table.dataTable thead th.sorting_desc:after {
+            font-family: -apple-system, sans-serif;
+            font-size: 12px;
+            opacity: 0.5;
+            margin-left: 4px;
+        }
+
+        table.dataTable tbody tr {
+            transition: all 0.15s ease;
+        }
+        table.dataTable tbody tr:hover {
+            background: #f5f5f7 !important;
+        }
+        table.dataTable tbody td {
+            padding: 20px;
+            border-bottom: 1px solid #e8e8ed;
+            background: #ffffff;
+        }
+        table.dataTable tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .navbar { padding: 0 16px; }
+            .main   { padding: 24px 16px 48px; }
+            .nav-greeting { display: none; }
+            .page-header h1 { font-size: 24px; }
+            .dataTables_wrapper { padding: 0 12px 16px; }
+            .dataTables_length,
+            .dataTables_filter {
+                float: none !important;
+                text-align: left !important;
+                margin-bottom: 10px;
+            }
+            .dataTables_filter input {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+        }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
             .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -385,6 +607,17 @@ while ($row = $count_result->fetch_assoc()) {
             .main   { padding: 24px 16px 48px; }
             .nav-greeting { display: none; }
             .page-header h1 { font-size: 24px; }
+            .dataTables_wrapper { padding: 0 12px 16px; }
+            .dataTables_length,
+            .dataTables_filter {
+                float: none !important;
+                text-align: left !important;
+                margin-bottom: 8px;
+            }
+            .dataTables_filter input {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
         }
     </style>
 </head>
@@ -400,7 +633,7 @@ while ($row = $count_result->fetch_assoc()) {
         </div>
         <div class="nav-right">
             <span class="nav-greeting">Logged in as <strong><?= htmlspecialchars($staff_name) ?></strong></span>
-            <a href="staff_logout.php" class="btn-logout" id="logout-btn">Sign Out</a>
+            <a href="../auth/staff_logout.php" class="btn-logout" id="logout-btn">Sign Out</a>
         </div>
     </div>
 </nav>
@@ -409,7 +642,7 @@ while ($row = $count_result->fetch_assoc()) {
 <div class="main">
 
     <!-- PAGE HEADER -->
-    <div class="page-header">
+    <div class="page-header motion-fade-up">
         <h1>Appointment Management</h1>
         <p>View, update, and manage all student clinic appointments.</p>
     </div>
@@ -423,36 +656,36 @@ while ($row = $count_result->fetch_assoc()) {
     <?php endif; ?>
 
     <!-- STATS -->
-    <div class="stats-row">
-        <div class="stat-card total">
+    <div class="stats-row motion-reveal">
+        <div class="stat-card total motion-lift">
             <div class="stat-dot"></div>
-            <div class="stat-count"><?= $counts['Total'] ?></div>
+            <div class="stat-count motion-count"><?= $counts['Total'] ?></div>
             <div class="stat-label">Total</div>
         </div>
-        <div class="stat-card scheduled">
+        <div class="stat-card scheduled motion-lift">
             <div class="stat-dot"></div>
-            <div class="stat-count"><?= $counts['Scheduled'] ?></div>
+            <div class="stat-count motion-count"><?= $counts['Scheduled'] ?></div>
             <div class="stat-label">Scheduled</div>
         </div>
-        <div class="stat-card completed">
+        <div class="stat-card completed motion-lift">
             <div class="stat-dot"></div>
-            <div class="stat-count"><?= $counts['Completed'] ?></div>
+            <div class="stat-count motion-count"><?= $counts['Completed'] ?></div>
             <div class="stat-label">Completed</div>
         </div>
-        <div class="stat-card cancelled">
+        <div class="stat-card cancelled motion-lift">
             <div class="stat-dot"></div>
-            <div class="stat-count"><?= $counts['Cancelled'] ?></div>
+            <div class="stat-count motion-count"><?= $counts['Cancelled'] ?></div>
             <div class="stat-label">Cancelled</div>
         </div>
     </div>
 
     <!-- TABLE -->
-    <div class="section">
+    <div class="section motion-reveal">
         <div class="section-label">All Appointments</div>
         <div class="card">
 
             <!-- SEARCH & FILTER -->
-            <form method="GET" action="staff_dashboard.php">
+            <form method="GET" action="../staff/staff_dashboard.php">
                 <div class="toolbar">
                     <input class="search-input" type="text" name="search"
                            placeholder="🔍  Search by student name or ID..."
@@ -464,7 +697,7 @@ while ($row = $count_result->fetch_assoc()) {
                         <option value="Cancelled"  <?= $filter_status === 'Cancelled'  ? 'selected' : '' ?>>Cancelled</option>
                     </select>
                     <button type="submit" class="btn-search">Search</button>
-                    <a href="staff_dashboard.php" class="btn-reset">Reset</a>
+                    <a href="../staff/staff_dashboard.php" class="btn-reset">Reset</a>
                 </div>
             </form>
 
@@ -473,12 +706,12 @@ while ($row = $count_result->fetch_assoc()) {
                 <span class="badge-count"><?= $result->num_rows ?> found</span>
             </div>
 
-            <table>
+            <table id="appointmentsTable" class="display responsive nowrap">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Student</th>
-                        <th>Date &amp; Time</th>
+                        <th>Date & Time</th>
                         <th>Status</th>
                         <th>Reminder</th>
                         <th>Actions</th>
@@ -520,7 +753,7 @@ while ($row = $count_result->fetch_assoc()) {
                                 <td>
                                     <div class="action-row">
                                         <!-- Update Status -->
-                                        <form method="POST" action="staff_dashboard.php<?= !empty($_SERVER['QUERY_STRING']) ? '?' . htmlspecialchars($_SERVER['QUERY_STRING']) : '' ?>" style="display:flex;gap:6px;align-items:center;">
+                                        <form method="POST" action="../staff/staff_dashboard.php<?= !empty($_SERVER['QUERY_STRING']) ? '?' . htmlspecialchars($_SERVER['QUERY_STRING']) : '' ?>" style="display:flex;gap:6px;align-items:center;">
                                             <input type="hidden" name="appt_id" value="<?= $row['id'] ?>">
                                             <select name="new_status" class="status-select">
                                                 <option value="Scheduled" <?= $row['status'] === 'Scheduled' ? 'selected' : '' ?>>Scheduled</option>
@@ -531,7 +764,7 @@ while ($row = $count_result->fetch_assoc()) {
                                         </form>
 
                                         <!-- Delete -->
-                                        <form method="POST" action="staff_dashboard.php<?= !empty($_SERVER['QUERY_STRING']) ? '?' . htmlspecialchars($_SERVER['QUERY_STRING']) : '' ?>"
+                                        <form method="POST" action="../staff/staff_dashboard.php<?= !empty($_SERVER['QUERY_STRING']) ? '?' . htmlspecialchars($_SERVER['QUERY_STRING']) : '' ?>"
                                               onsubmit="return confirm('Delete appointment #<?= $row['id'] ?> for <?= htmlspecialchars(addslashes($row['studentname'])) ?>? This cannot be undone.');">
                                             <input type="hidden" name="appt_id" value="<?= $row['id'] ?>">
                                             <button type="submit" name="delete_appt" class="btn-delete">Delete</button>
@@ -557,6 +790,88 @@ while ($row = $count_result->fetch_assoc()) {
     </div>
 
 </div>
+
+    <script>
+$(document).ready(function() {
+    $('#appointmentsTable').DataTable({
+        pageLength: 25,
+        order: [[0, 'desc']],
+        language: {
+            search: 'Search:',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ appointments',
+            infoEmpty: 'No appointments found',
+            infoFiltered: '(filtered from _MAX_ total)',
+            paginate: {
+                first: 'First',
+                last: 'Last',
+                next: 'Next',
+                previous: 'Previous'
+            }
+        },
+        columnDefs: [
+            { width: '60px', targets: 0 },
+            { width: '200px', targets: 1 },
+            { width: '140px', targets: 2 },
+            { width: '100px', targets: 3 },
+            { width: '90px', targets: 4 },
+            { width: '220px', targets: 5 }
+        ],
+        initComplete: function() {
+            // Add spacing between Show entries and Search
+            $('.dataTables_length').css({
+                'margin-right': '120px',
+                'padding-right': '20px'
+            });
+            $('.dataTables_filter').css({
+                'padding-left': '20px'
+            });
+
+            // Style the search input
+            $('.dataTables_filter input').css({
+                'padding': '10px 14px',
+                'background': 'rgba(120,120,128,0.12)',
+                'border': '1.5px solid transparent',
+                'border-radius': '10px',
+                'font-family': "'Inter', -apple-system, sans-serif",
+                'font-size': '14px',
+                'color': '#1c1c1e',
+                'outline': 'none',
+                'transition': 'border-color 0.2s, background 0.2s'
+            });
+            $('.dataTables_filter input').focus(function() {
+                $(this).css({
+                    'border-color': '#007aff',
+                    'background': 'rgba(0,122,255,0.05)'
+                });
+            }).blur(function() {
+                $(this).css({
+                    'border-color': 'transparent',
+                    'background': 'rgba(120,120,128,0.12)'
+                });
+            });
+
+            // Style the length select
+            $('.dataTables_length select').css({
+                'padding': '6px 10px',
+                'background': 'rgba(120,120,128,0.12)',
+                'border': '1.5px solid transparent',
+                'border-radius': '8px',
+                'font-family': "'Inter', -apple-system, sans-serif",
+                'font-size': '13px',
+                'color': '#1c1c1e',
+                'outline': 'none',
+                'cursor': 'pointer'
+            });
+            $('.dataTables_length select').focus(function() {
+                $(this).css('border-color', '#007aff');
+            }).blur(function() {
+                $(this).css('border-color', 'transparent');
+            });
+        }
+    });
+});
+</script>
 
 </body>
 </html>

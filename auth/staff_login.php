@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'db.php';
+require '../config/db.php';
 
 $message = "";
 $message_class = "";
@@ -16,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $result = $stmt->get_result();
 
         if ($row = $result->fetch_assoc()) {
-            if ($password === $row['password']) {
+            if (password_verify($password, $row['password'])) {
                 $_SESSION['staff_id']   = $row['id'];
                 $_SESSION['staff_name'] = $row['fullname'];
-                header("Location: staff_dashboard.php");
+                header("Location: ../staff/staff_dashboard.php");
                 exit;
             } else {
                 $message       = "Incorrect password. Please try again.";
@@ -44,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="description" content="Staff login for the UiTM Health Unit appointment management system.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Shared motion / animation library -->
+    <link rel="stylesheet" href="../assets/motion.css">
+    <script src="../assets/motion.js" defer></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -221,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 
-<div class="login-wrap">
+<div class="login-wrap motion-pop">
     <div class="login-header">
         <div class="app-icon">🏥</div>
         <h1>UiTM Health Unit</h1>
@@ -229,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <span class="role-badge">Staff Access</span>
     </div>
 
-    <div class="card">
+    <div class="card motion-fade-up motion-delay-1">
         <?php if (!empty($message)): ?>
             <div class="alert <?= $message_class ?>" role="alert">
                 <div class="alert-icon"><?= $message_class === 'success' ? '✓' : '✕' ?></div>
@@ -237,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         <?php endif; ?>
 
-        <form action="staff_login.php" method="POST">
+        <form action="../auth/staff_login.php" method="POST" data-motion-loading>
             <div class="field-group">
                 <label class="field-label" for="username">Username</label>
                 <input class="field-input" type="text" id="username" name="username"
@@ -248,12 +251,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input class="field-input" type="password" id="password" name="password"
                        placeholder="Enter password" required>
             </div>
-            <button type="submit" class="btn-primary" id="staff-login-btn">Sign In</button>
+            <button type="submit" class="btn-primary motion-press" id="staff-login-btn" data-loading-text="Signing in…">Sign In</button>
         </form>
     </div>
 
-    <div class="footer-link">
-        Not staff? <a href="login.php">← Student Login</a>
+    <div class="footer-link motion-fade-up motion-delay-2">
+        Not staff? <a href="../auth/login.php" class="motion-underline">← Student Login</a>
     </div>
 </div>
 

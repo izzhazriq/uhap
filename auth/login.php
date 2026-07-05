@@ -1,9 +1,21 @@
 <?php
 session_start();
-require 'db.php';
+require '../config/db.php';
 
 $message = "";
 $message_class = "";
+
+// ── NEW CODE: Catch the rejection error sent back from google_auth.php ──
+if (isset($_GET['google_error'])) {
+    $message = urldecode($_GET['google_error']);
+    $message_class = "error";
+}
+
+// Handle the standard form submission (Username/Password)
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email    = trim($_POST['email']);
+    $password = trim($_POST['password']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email    = trim($_POST['email']);
@@ -24,7 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['studentno']    = $row['studentno'];
                     $_SESSION['studentname']  = $row['studentname'];
                     $_SESSION['studentemail'] = $row['studentemailuitm'];
-                    header("Location: dashboard.php");
+                    header("Location: ../student/dashboard.php");
+                    header("Location: ../student/dashboard.php");
                     exit;
                 } else {
                     $message       = "Error creating your password. Please try again.";
@@ -35,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['studentno']    = $row['studentno'];
                     $_SESSION['studentname']  = $row['studentname'];
                     $_SESSION['studentemail'] = $row['studentemailuitm'];
-                    header("Location: dashboard.php");
+                    header("Location: ../student/dashboard.php");
                     exit;
                 } else {
                     $message       = "Incorrect password. Please try again.";
@@ -58,9 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Login — UiTM Health Unit</title>
-    <meta name="description" content="Login to the UiTM Health Unit student appointment portal.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Shared motion / animation library -->
+    <link rel="stylesheet" href="../assets/motion.css">
+    <script src="../assets/motion.js" defer></script>
+    <!-- Google Sign-In SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -77,8 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             --bg-primary:      #f2f2f7;
             --bg-secondary:    #ffffff;
         }
-
-        html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
@@ -124,7 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-size: 22px;
             font-weight: 700;
             letter-spacing: -0.4px;
-            color: var(--label-primary);
             margin-bottom: 4px;
         }
 
@@ -160,7 +174,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-weight: 500;
             margin-bottom: 20px;
             line-height: 1.5;
-            animation: fadeUp 0.25s ease;
         }
         .alert-icon {
             width: 18px; height: 18px;
@@ -214,10 +227,60 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             cursor: pointer;
             transition: background 0.2s, transform 0.15s;
             margin-top: 6px;
-            letter-spacing: -0.1px;
         }
         .btn-primary:hover  { background: var(--blue-hover); }
         .btn-primary:active { transform: scale(0.98); }
+
+        /* ── DIVIDER ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: var(--label-tertiary);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--separator);
+        }
+
+        /* ── GOOGLE BUTTON ── */
+        .btn-google {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #fff;
+            border: 1.5px solid var(--separator);
+            border-radius: 12px;
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--label-primary);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s, border-color 0.2s;
+            text-decoration: none;
+        }
+        .btn-google:hover {
+            background: var(--fill-1);
+            border-color: rgba(60,60,67,0.2);
+        }
+        .btn-google:active { transform: scale(0.98); }
+
+        .google-logo {
+            width: 18px; height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* Hide the actual Google button rendered by the SDK */
+        #g_id_onload { display: none; }
+        .g_id_signin { display: none; }
 
         .footer-link {
             text-align: center;
@@ -234,16 +297,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 
-<div class="login-wrap">
+<!-- Google Sign-In: auto-initialize. Callback handled by google_callback() -->
+
+<div class="login-wrap motion-pop">
     <div class="login-header">
         <div class="app-icon">🏥</div>
         <h1>UiTM Health Unit</h1>
         <p>Student Appointment Portal</p>
     </div>
 
-    <div class="card">
+    <div class="card motion-fade-up motion-delay-1">
         <?php if (!empty($message)): ?>
-            <div class="alert <?= $message_class ?>" role="alert">
+            <div class="alert <?= $message_class ?>">
                 <div class="alert-icon"><?= $message_class === 'success' ? '✓' : '✕' ?></div>
                 <span><?= htmlspecialchars($message) ?></span>
             </div>
@@ -253,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <strong>First time?</strong> Enter your UiTM student email. The password you type will become your permanent account password.
         </div>
 
-        <form action="login.php" method="POST">
+        <form action="../auth/login.php" method="POST" data-motion-loading>
             <div class="field-group">
                 <label class="field-label" for="email">Student Email</label>
                 <input class="field-input" type="email" id="email" name="email"
@@ -264,12 +329,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input class="field-input" type="password" id="password" name="password"
                        placeholder="Enter or create your password" required>
             </div>
-            <button type="submit" class="btn-primary" id="login-btn">Login / Sign Up</button>
+            <button type="submit" class="btn-primary motion-press" data-loading-text="Signing in…">Login / Sign Up</button>
         </form>
+
+        <div class="divider">or</div>
+
+        <!-- Custom Google button that triggers the SDK -->
+        <a href="../config/google_auth.php" class="btn-google motion-press">
+    <svg class="google-logo" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="none" d="M0 0h48v48H0z"/>
+    </svg>
+    Continue with Google
+</a>
     </div>
 
-    <div class="footer-link">
-        Are you staff? <a href="staff_login.php">Staff Login →</a>
+        <div class="footer-link motion-fade-up motion-delay-2">
+            Are you staff? <a href="../auth/staff_login.php" class="motion-underline">Staff Login →</a>
     </div>
 </div>
 
