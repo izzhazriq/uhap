@@ -6,14 +6,29 @@
  */
 
 session_start();
-require 'db.php';
+require 'db.php'; 
 
-// ── YOUR CREDENTIALS (from Google Cloud Console) ──────────────────────────────
-$client_id     = '883026629598-4n3dlrghn9tfner550gqmjl5e5obmr0i.apps.googleusercontent.com';
-$client_secret = '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';
-$redirect_uri  = 'http://localhost/uhap/config/google_auth.php'; // ← change 'uhap' to your folder name
+// 2. Pure PHP environment loader (Safe, lightweight, no JavaScript needed)
+if (file_exists(__DIR__ . '/../.env')) {
+    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        // Skip comments or lines without an equals sign
+        if (strpos(trim($line), '#') === 0 || strpos($line, '=') === false) continue;
+        list($name, $value) = explode('=', $line, 2);
+        $_ENV[trim($name)] = trim($value);
+    }
+}
 
-// ── STEP 1: No code yet → build Google OAuth URL and redirect ─────────────────
+// 3. Map your credentials from the .env file
+$client_id     = $_ENV['GOOGLE_CLIENT_ID'] ?? '';
+$client_secret = $_ENV['GOOGLE_CLIENT_SECRET'] ?? '';
+$redirect_uri  = 'http://localhost/uhap/config/google_auth.php'; 
+
+// Safety gate check
+if (empty($client_id) || empty($client_secret)) {
+    die("Configuration Error: Missing Google API Client Keys in your .env file.");
+}
+
 // ── STEP 1: No code yet → build Google OAuth URL and redirect ─────────────────
 if (!isset($_GET['code'])) {
     $params = http_build_query([
