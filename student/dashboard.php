@@ -790,13 +790,13 @@ $appointments_result->data_seek(0);
 
         .btn-primary {
             display: inline-flex; align-items: center; gap: 7px;
-            background: var(--blue); color: #fff; border: none;
+            background: var(--green); color: #fff; border: 1px solid rgba(52,199,89,0.2);
             border-radius: 12px; padding: 13px 26px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-size: 15px; font-weight: 600; cursor: pointer;
             transition: background 0.2s, transform 0.15s, opacity 0.2s; letter-spacing: -0.1px;
         }
-        .btn-primary:hover  { background: var(--blue-hover); }
+        .btn-primary:hover  { background: rgba(52,199,89,0.20); }
         .btn-primary:active { transform: scale(0.97); }
         .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
